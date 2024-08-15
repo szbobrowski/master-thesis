@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package main;
+
+// The lifeguard service definition.
+service LifeguardService {
+    // Creates a new lifeguard.
+    rpc CreateLifeguard (CreateLifeguardRequest) returns (CreateLifeguardResponse);
+    
+    // Retrieves a lifeguard by ID.
+    rpc GetLifeguard (GetLifeguardRequest) returns (GetLifeguardResponse);
+    
+    // Updates an existing lifeguard.
+    rpc UpdateLifeguard (UpdateLifeguardRequest) returns (UpdateLifeguardResponse);
+    
+    // Deletes a lifeguard by ID.
+    rpc DeleteLifeguard (DeleteLifeguardRequest) returns (DeleteLifeguardResponse);
+}
+
+// The request message containing the lifeguard details for creation.
+message CreateLifeguardRequest {
+    string name = 1;
+    string login = 2;
+    string password_hash = 3;
+    int32 years_of_experience = 4;
+    string specialization = 5;
+    bool on_mission = 6;
+}
+
+// The response message containing the ID of the newly created lifeguard.
+message CreateLifeguardResponse {
+    int64 id = 1;
+}
+
+// The request message containing the ID of the lifeguard to retrieve.
+message GetLifeguardRequest {
+    int64 id = 1;
+}
+
+// The response message containing the lifeguard details.
+message GetLifeguardResponse {
+    int64 id = 1;
+    string name = 2;
+    string login = 3;
+    string password_hash = 4;
+    int32 years_of_experience = 5;
+    string specialization = 6;
+    bool on_mission = 7;
+    string created_at = 8; // You can use string or google.protobuf.Timestamp
+}
+
+// The request message containing the lifeguard details for updating.
+message UpdateLifeguardRequest {
+    int64 id = 1;
+    string name = 2;
+    string login = 3;
+    string password_hash = 4;
+    int32 years_of_experience = 5;
+    string specialization = 6;
+    bool on_mission = 7;
+}
+
+// The response message confirming the lifeguard update.
+message UpdateLifeguardResponse {
+    bool success = 1;
+}
+
+// The request message containing the ID of the lifeguard to delete.
+message DeleteLifeguardRequest {
+    int64 id = 1;
+}
+
+// The response message confirming the lifeguard deletion.
+message DeleteLifeguardResponse {
+    bool success = 1;
+}

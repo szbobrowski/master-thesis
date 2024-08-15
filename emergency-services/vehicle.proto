@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package main;
+
+// The vehicle service definition.
+service VehicleService {
+    // Creates a new vehicle.
+    rpc CreateVehicle (CreateVehicleRequest) returns (CreateVehicleResponse);
+    
+    // Retrieves a vehicle by ID.
+    rpc GetVehicle (GetVehicleRequest) returns (GetVehicleResponse);
+    
+    // Updates an existing vehicle.
+    rpc UpdateVehicle (UpdateVehicleRequest) returns (UpdateVehicleResponse);
+    
+    // Deletes a vehicle by ID.
+    rpc DeleteVehicle (DeleteVehicleRequest) returns (DeleteVehicleResponse);
+}
+
+// The request message containing the vehicle details for creation.
+message CreateVehicleRequest {
+    string type = 1;
+    string location = 2;
+    int32 fuel_level_in_liters = 3;
+    bool on_mission = 4;
+    int64 lifeguard_in_charge_id = 5;
+}
+
+// The response message containing the ID of the newly created vehicle.
+message CreateVehicleResponse {
+    int64 id = 1;
+}
+
+// The request message containing the ID of the vehicle to retrieve.
+message GetVehicleRequest {
+    int64 id = 1;
+}
+
+// The response message containing the vehicle details.
+message GetVehicleResponse {
+    int64 id = 1;
+    string type = 2;
+    string location = 3;
+    int32 fuel_level_in_liters = 4;
+    bool on_mission = 5;
+    int64 lifeguard_in_charge_id = 6;
+    string created_at = 7; // You can use string or google.protobuf.Timestamp
+}
+
+// The request message containing the vehicle details for updating.
+message UpdateVehicleRequest {
+    int64 id = 1;
+    string type = 2;
+    string location = 3;
+    int32 fuel_level_in_liters = 4;
+    bool on_mission = 5;
+    int64 lifeguard_in_charge_id = 6;
+}
+
+// The response message confirming the vehicle update.
+message UpdateVehicleResponse {
+    bool success = 1;
+}
+
+// The request message containing the ID of the vehicle to delete.
+message DeleteVehicleRequest {
+    int64 id = 1;
+}
+
+// The response message confirming the vehicle deletion.
+message DeleteVehicleResponse {
+    bool success = 1;
+}
