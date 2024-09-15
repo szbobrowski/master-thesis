@@ -3,6 +3,7 @@ package main
 import (
 	context "context"
 	"encoding/json"
+	"log" // Added log package
 	"net/http"
 	"strconv"
 	"time"
@@ -46,6 +47,9 @@ func CreateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Log the event
+	log.Printf("Lifeguard created: %+v\n", lifeguard)
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
@@ -69,6 +73,9 @@ func GetLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Log the event
+	log.Printf("Lifeguard retrieved with ID: %d\n", id)
 
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
@@ -108,6 +115,9 @@ func UpdateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Log the event
+	log.Printf("Lifeguard updated with ID: %d, New Data: %+v\n", id, lifeguard)
+
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
 
@@ -130,6 +140,9 @@ func DeleteLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Log the event
+	log.Printf("Lifeguard deleted with ID: %d\n", id)
 
 	w.WriteHeader(http.StatusNoContent)
 }

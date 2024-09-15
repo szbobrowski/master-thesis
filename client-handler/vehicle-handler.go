@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log" // Added log package
 	"net/http"
 	"strconv"
 	"time"
@@ -44,6 +45,9 @@ func CreateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Log the event
+	log.Printf("Vehicle created: %+v\n", vehicle)
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
@@ -67,6 +71,9 @@ func GetVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Log the event
+	log.Printf("Vehicle retrieved with ID: %d\n", id)
 
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
@@ -105,6 +112,9 @@ func UpdateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Log the event
+	log.Printf("Vehicle updated with ID: %d, New Data: %+v\n", id, vehicle)
+
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
 
@@ -127,6 +137,9 @@ func DeleteVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Log the event
+	log.Printf("Vehicle deleted with ID: %d\n", id)
 
 	w.WriteHeader(http.StatusNoContent)
 }
