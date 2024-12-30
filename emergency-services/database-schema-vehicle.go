@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql" // Import the MySQL driver
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type VehicleDTO struct {
@@ -18,9 +18,7 @@ type VehicleDTO struct {
 	CreatedAt           time.Time
 }
 
-// CreateVehiclesTable checks if the vehicles table exists, and creates it if it doesn't.
 func CreateVehiclesTable(db *sql.DB) error {
-	// SQL query to check if the table exists
 	checkTableQuery := `
 		SELECT COUNT(*)
 		FROM information_schema.tables 
@@ -33,7 +31,6 @@ func CreateVehiclesTable(db *sql.DB) error {
 		return fmt.Errorf("error checking if table exists: %w", err)
 	}
 
-	// If the table does not exist, create it
 	if count == 0 {
 		createTableQuery := `
 			CREATE TABLE vehicles (
@@ -49,12 +46,12 @@ func CreateVehiclesTable(db *sql.DB) error {
 		`
 		_, err = db.Exec(createTableQuery)
 		if err != nil {
-			return fmt.Errorf("error creating vehicles table: %w", err)
+			return fmt.Errorf("Błąd podczas tworzenia tabeli vehicles: %w", err)
 		}
 
-		fmt.Println("Vehicles table created successfully!")
+		fmt.Println("Pomyślnie utworzono tabelę vehicles!")
 	} else {
-		fmt.Println("Vehicles table already exists.")
+		fmt.Println("Tabela vehicles już istnieje.")
 	}
 
 	return nil

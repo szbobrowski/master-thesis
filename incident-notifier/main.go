@@ -20,21 +20,20 @@ const (
 )
 
 func main() {
-	// Load the default AWS configuration
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithEndpointResolver(
 		aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 			switch service {
 			case dynamodb.ServiceID:
 				return aws.Endpoint{
 					PartitionID:   "aws",
-					URL:           "http://localhost:4566", // LocalStack URL for DynamoDB
-					SigningRegion: "us-west-2",             // Region for signing, can be any valid AWS region
+					URL:           "http://localhost:4566",
+					SigningRegion: "us-west-2",
 				}, nil
 			case sqs.ServiceID:
 				return aws.Endpoint{
 					PartitionID:   "aws",
-					URL:           "http://localhost:4566", // LocalStack URL for SQS
-					SigningRegion: "us-west-2",             // Region for signing, can be any valid AWS region
+					URL:           "http://localhost:4566",
+					SigningRegion: "us-west-2",
 				}, nil
 			default:
 				return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested for service: %s", service)
@@ -42,37 +41,34 @@ func main() {
 		}),
 	))
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		log.Fatalf("Nie udało się pobrać konfiguracji SDK, %v", err)
 	}
 
 	dynamoClient := dynamodb.NewFromConfig(cfg)
 	sqsClient := sqs.NewFromConfig(cfg)
 
-	// Initialize SQSManager
 	sqsManager, err := NewSQSManager(sqsClient)
 	if err != nil {
-		log.Fatalf("unable to initialize SQS manager, %v", err)
+		log.Fatalf("Nie udało się utworzyć menedżera SQS, %v", err)
 	}
 
-	// Check if the Incidents table exists, and create it if not
 	exists, err := tableExists(dynamoClient)
 	if err != nil {
-		log.Fatalf("unable to check if table exists, %v", err)
+		log.Fatalf("Nie udało się sprawdzić czy tabela istnieje, %v", err)
 	}
 
 	if !exists {
-		fmt.Println("Table does not exist, creating table...")
 		err = createTable(dynamoClient)
 		if err != nil {
-			log.Fatalf("unable to create table, %v", err)
+			log.Fatalf("Utwrzono tabelę Incidents, %v", err)
 		}
 	} else {
-		fmt.Println("Table already exists.")
+		fmt.Println("Tabela Incidents już istnieje.")
 	}
 
 	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("Nie udało się rozpocząć nasłuchiwania na porcie 50052: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -80,12 +76,11 @@ func main() {
 
 	RegisterIncidentServiceServer(grpcServer, incidentServer)
 
-	// Enable reflection for gRPC server
 	reflection.Register(grpcServer)
 
-	log.Printf("Server is running at %v", lis.Addr())
+	log.Printf("Serwer nasłuchuje na adresie %v", lis.Addr())
 
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("Błąd podczas działania serwera: %v", err)
 	}
 }

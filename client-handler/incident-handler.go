@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"      // Added log package
-	"net/http" // Added for stdout
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -15,9 +15,8 @@ import (
 
 const grpcAddress = "localhost:50052"
 
-var incidentClient IncidentServiceClient // gRPC client for GraphQL
+var incidentClient IncidentServiceClient
 
-// Create Incident GraphQL Type
 var incidentType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Incident",
@@ -41,7 +40,6 @@ var incidentType = graphql.NewObject(
 	},
 )
 
-// Define the GraphQL query root
 var rootQuery = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
@@ -56,10 +54,9 @@ var rootQuery = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					incidentID, ok := p.Args["incidentID"].(string)
 					if !ok {
-						return nil, fmt.Errorf("incidentID is required")
+						return nil, fmt.Errorf("Wymagane jest pole incidentID")
 					}
 
-					// Call GetIncident method from the gRPC server
 					req := &GetIncidentRequest{
 						IncidentID: incidentID,
 					}
@@ -69,11 +66,11 @@ var rootQuery = graphql.NewObject(
 					resp, err := incidentClient.GetIncident(ctx, req)
 					if err != nil {
 						st, _ := status.FromError(err)
-						log.Printf("Failed to retrieve incident with ID: %s, error: %v\n", incidentID, st.Message()) // Log error
-						return nil, fmt.Errorf("gRPC error: %v", st.Message())
+						log.Printf("Nie udało się pobrać incydentu o id: %s, błąd: %v\n", incidentID, st.Message())
+						return nil, fmt.Errorf("Błąd z serwera incident-notifier: %v", st.Message())
 					}
 
-					log.Printf("Incident retrieved: %+v\n", resp.Incident) // Log success
+					log.Printf("Pobrano incydent: %+v\n", resp.Incident)
 					return resp.Incident, nil
 				},
 			},
@@ -81,7 +78,6 @@ var rootQuery = graphql.NewObject(
 	},
 )
 
-// Define mutation for creating, updating, and deleting an incident
 var rootMutation = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Mutation",
@@ -108,7 +104,6 @@ var rootMutation = graphql.NewObject(
 					status := p.Args["status"].(string)
 					creationDate := p.Args["creationDate"].(string)
 
-					// Call CreateIncident method from the gRPC server
 					req := &CreateIncidentRequest{
 						Title:        title,
 						Description:  description,
@@ -120,16 +115,15 @@ var rootMutation = graphql.NewObject(
 
 					resp, err := incidentClient.CreateIncident(ctx, req)
 					if err != nil {
-						log.Printf("Failed to create incident, error: %v\n", err) // Log error
-						return nil, fmt.Errorf("gRPC error: %v", err.Error())
+						log.Printf("Nie udało się utworzyć incydentu, error: %v\n", err)
+						return nil, fmt.Errorf("Błąd z serwera incident-notifier: %v", err.Error())
 					}
 
-					log.Printf("Incident created: %+v\n", resp.Incident) // Log success
+					log.Printf("Utworzono incydent: %+v\n", resp.Incident)
 					return resp.Incident, nil
 				},
 			},
 
-			// Mutation for updating an incident
 			"updateIncident": &graphql.Field{
 				Type: incidentType,
 				Args: graphql.FieldConfigArgument{
@@ -144,7 +138,6 @@ var rootMutation = graphql.NewObject(
 					incidentID := p.Args["incidentID"].(string)
 					status := p.Args["status"].(string)
 
-					// Call UpdateIncident method from the gRPC server
 					req := &UpdateIncidentRequest{
 						IncidentID: incidentID,
 						Status:     status,
@@ -154,16 +147,15 @@ var rootMutation = graphql.NewObject(
 
 					resp, err := incidentClient.UpdateIncident(ctx, req)
 					if err != nil {
-						log.Printf("Failed to update incident with ID: %s, error: %v\n", incidentID, err) // Log error
-						return nil, fmt.Errorf("gRPC error: %v", err.Error())
+						log.Printf("Nie udało się zaktualizować incydentu o id: %s, error: %v\n", incidentID, err)
+						return nil, fmt.Errorf("Błąd z serwera incident-notifier: %v", err.Error())
 					}
 
-					log.Printf("Incident updated: %+v\n", resp.Incident) // Log success
+					log.Printf("Zaktualizowano incydent: %+v\n", resp.Incident)
 					return resp.Incident, nil
 				},
 			},
 
-			// Mutation for deleting an incident
 			"deleteIncident": &graphql.Field{
 				Type: graphql.NewObject(graphql.ObjectConfig{
 					Name: "DeleteResponse",
@@ -181,7 +173,6 @@ var rootMutation = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					incidentID := p.Args["incidentID"].(string)
 
-					// Call DeleteIncident method from the gRPC server
 					req := &DeleteIncidentRequest{
 						IncidentID: incidentID,
 					}
@@ -190,11 +181,11 @@ var rootMutation = graphql.NewObject(
 
 					_, err := incidentClient.DeleteIncident(ctx, req)
 					if err != nil {
-						log.Printf("Failed to delete incident with ID: %s, error: %v\n", incidentID, err) // Log error
-						return nil, fmt.Errorf("gRPC error: %v", err.Error())
+						log.Printf("Nie udało się usunąć incydentu o id: %s, error: %v\n", incidentID, err)
+						return nil, fmt.Errorf("Błąd z serwera incident-notifier: %v", err.Error())
 					}
 
-					log.Printf("Incident deleted with ID: %s\n", incidentID) // Log success
+					log.Printf("Usunięto incydent o id: %s\n", incidentID)
 					return map[string]interface{}{
 						"success": true,
 					}, nil
@@ -204,18 +195,14 @@ var rootMutation = graphql.NewObject(
 	},
 )
 
-// Initialize gRPC client
 func initIncidentGrpcClient() {
-	// Dial to gRPC server
 	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Failed to connect to gRPC server: %v", err)
+		log.Fatalf("Nie udało się połączyć z serwerem incident-notifier: %v", err)
 	}
 	incidentClient = NewIncidentServiceClient(conn)
-	log.Println("Connected to gRPC server at", grpcAddress, "for GraphQL") // Log connection to gRPC server
 }
 
-// Define the GraphQL schema
 var schema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
 		Query:    rootQuery,
@@ -223,20 +210,18 @@ var schema, _ = graphql.NewSchema(
 	},
 )
 
-// GraphQL handler
 func graphqlHandler(w http.ResponseWriter, r *http.Request) {
 	var params struct {
 		Query string `json:"query"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		log.Println("Error parsing GraphQL request body") // Log error
-		http.Error(w, "Error parsing request body", http.StatusBadRequest)
+		log.Println("Błąd podczas dekodowania treści zapytania")
+		http.Error(w, "Błąd podczas dekodowania treści zapytania", http.StatusBadRequest)
 		return
 	}
 
-	// Log the incoming query
-	log.Printf("Received GraphQL query: %s\n", params.Query)
+	log.Printf("Otrzymano kwerendę GraphQL: %s\n", params.Query)
 
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,

@@ -5,20 +5,17 @@ import (
 	"fmt"
 )
 
-// ConnectToDB establishes a connection to the MySQL database and returns the database connection.
 func ConnectToDB(dsn string) (*sql.DB, error) {
-	// Open a connection to the database
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
+		return nil, fmt.Errorf("Błąd podczas otwierania bazy danych: %w", err)
 	}
 
-	// Verify the connection to the database
 	if err := db.Ping(); err != nil {
-		db.Close() // Close the database connection if ping fails
-		return nil, fmt.Errorf("error connecting to the database: %w", err)
+		db.Close()
+		return nil, fmt.Errorf("Błąd podczas próby połączenia z bazą danych: %w", err)
 	}
 
-	fmt.Println("Successfully connected to the database!")
+	fmt.Println("Udało się połączyć z bazą danych!")
 	return db, nil
 }

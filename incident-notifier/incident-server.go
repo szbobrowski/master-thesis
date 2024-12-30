@@ -29,21 +29,14 @@ func (s *IncidentServer) CreateIncident(ctx context.Context, req *CreateIncident
 		CreationDate: req.CreationDate,
 	}
 
-	// Log the start of incident creation
-	log.Printf("Creating incident: %+v\n", incident)
-
 	err := createIncident(s.dbClient, incident)
 	if err != nil {
-		log.Printf("Failed to create incident: %v\n", err)
+		log.Printf("Nie udało się utworzyć incydentu: %v\n", err)
 		return nil, err
 	}
+	log.Printf("Incydent został utworzony: %s\n", incidentID)
 
-	// Log success of the incident creation in DynamoDB
-	log.Printf("Incident created successfully: %s\n", incidentID)
-
-	// Send message to SQS for incident creation
 	s.sqsManager.SendMessage(incident, "CREATE")
-	log.Printf("Incident message sent to SQS for incident creation: %s\n", incidentID)
 
 	return &IncidentResponse{Incident: &IncidentProto{
 		IncidentID:   incident.IncidentID,
@@ -55,17 +48,13 @@ func (s *IncidentServer) CreateIncident(ctx context.Context, req *CreateIncident
 }
 
 func (s *IncidentServer) GetIncident(ctx context.Context, req *GetIncidentRequest) (*IncidentResponse, error) {
-	// Log the start of incident retrieval
-	log.Printf("Retrieving incident with ID: %s\n", req.IncidentID)
-
 	incident, err := getIncident(s.dbClient, req.IncidentID)
 	if err != nil {
-		log.Printf("Failed to retrieve incident with ID: %s, error: %v\n", req.IncidentID, err)
+		log.Printf("Nie udało się pobrać incydentu o ID: %s, błąd: %v\n", req.IncidentID, err)
 		return nil, err
 	}
 
-	// Log the success of incident retrieval
-	log.Printf("Incident retrieved successfully: %+v\n", incident)
+	log.Printf("Pobrano incydent: %+v\n", incident)
 
 	return &IncidentResponse{Incident: &IncidentProto{
 		IncidentID:   incident.IncidentID,
@@ -77,27 +66,20 @@ func (s *IncidentServer) GetIncident(ctx context.Context, req *GetIncidentReques
 }
 
 func (s *IncidentServer) UpdateIncident(ctx context.Context, req *UpdateIncidentRequest) (*IncidentResponse, error) {
-	// Log the start of incident update
-	log.Printf("Updating incident with ID: %s to status: %s\n", req.IncidentID, req.Status)
-
 	err := updateIncident(s.dbClient, req.IncidentID, req.Status)
 	if err != nil {
-		log.Printf("Failed to update incident with ID: %s, error: %v\n", req.IncidentID, err)
+		log.Printf("Nie udało się zaktualizować incydentu o ID: %s, błąd: %v\n", req.IncidentID, err)
 		return nil, err
 	}
 
 	updatedIncident, err := getIncident(s.dbClient, req.IncidentID)
 	if err != nil {
-		log.Printf("Failed to retrieve updated incident with ID: %s, error: %v\n", req.IncidentID, err)
+		log.Printf("Nie udało się pobrać incydentu o ID: %s, błąd: %v\n", req.IncidentID, err)
 		return nil, err
 	}
+	log.Printf("Zaktualizowano incydent: %+v\n", updatedIncident)
 
-	// Log the success of incident update
-	log.Printf("Incident updated successfully: %+v\n", updatedIncident)
-
-	// Send message to SQS for incident update
 	s.sqsManager.SendMessage(*updatedIncident, "UPDATE")
-	log.Printf("Incident message sent to SQS for incident update: %s\n", updatedIncident.IncidentID)
 
 	return &IncidentResponse{Incident: &IncidentProto{
 		IncidentID:   updatedIncident.IncidentID,
@@ -109,28 +91,20 @@ func (s *IncidentServer) UpdateIncident(ctx context.Context, req *UpdateIncident
 }
 
 func (s *IncidentServer) DeleteIncident(ctx context.Context, req *DeleteIncidentRequest) (*DeleteIncidentResponse, error) {
-	// Log the start of incident deletion
-	log.Printf("Deleting incident with ID: %s\n", req.IncidentID)
-
-	// Retrieve the incident before deletion to send its details to SQS
 	incident, err := getIncident(s.dbClient, req.IncidentID)
 	if err != nil {
-		log.Printf("Failed to retrieve incident for deletion with ID: %s, error: %v\n", req.IncidentID, err)
+		log.Printf("Nie udało się pobrać incydentu do usunięcia, ID incydentu: %s, błąd: %v\n", req.IncidentID, err)
 		return nil, err
 	}
 
 	err = deleteIncident(s.dbClient, req.IncidentID)
 	if err != nil {
-		log.Printf("Failed to delete incident with ID: %s, error: %v\n", req.IncidentID, err)
+		log.Printf("Nie udało się usunąć incydentu o ID: %s, błąd: %v\n", req.IncidentID, err)
 		return nil, err
 	}
+	log.Printf("Usunięgo incydent o ID %s\n", req.IncidentID)
 
-	// Log the success of incident deletion
-	log.Printf("Incident with ID: %s deleted successfully\n", req.IncidentID)
-
-	// Send message to SQS for incident deletion
 	s.sqsManager.SendMessage(*incident, "DELETE")
-	log.Printf("Incident message sent to SQS for incident deletion: %s\n", incident.IncidentID)
 
 	return &DeleteIncidentResponse{Success: true}, nil
 }

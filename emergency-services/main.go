@@ -8,29 +8,27 @@ import (
 )
 
 func main() {
-	// Data source name (DSN) format: <username>:<password>@tcp(<hostname>:<port>)/<dbname>
-	dsn := "root:new_password@tcp(127.0.0.1:3306)/mydb"
-	db, err := ConnectToDB(dsn)
+	dataSourceName := "root:new_password@tcp(127.0.0.1:3306)/mydb"
+	db, err := ConnectToDB(dataSourceName)
 	if err != nil {
-		log.Fatalf("Database connection failed: %v", err)
+		log.Fatalf("Nie udało się nawiązać połączenia z bazą danych: %v", err)
 	}
 	defer db.Close()
 
 	CreateLifeguardsTable(db)
 	CreateVehiclesTable(db)
 
-	// Create the gRPC server
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("Nie udało się uruchomić serwera gRPC: %v", err)
 	}
 
 	s := grpc.NewServer()
 	RegisterLifeguardServiceServer(s, NewLifeguardServer(db))
 	RegisterVehicleServiceServer(s, NewVehicleServer(db))
 
-	log.Printf("Server listening at %v", lis.Addr())
+	log.Printf("Serwer nasłuchuje na adresie %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+		log.Fatalf("Błąd podczas działania serwera: %v", err)
 	}
 }

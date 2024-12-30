@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-// Incident represents an incident record
 type Incident struct {
 	IncidentID   string
 	Title        string
@@ -19,7 +18,6 @@ type Incident struct {
 	CreationDate string
 }
 
-// Check if the table exists
 func tableExists(client *dynamodb.Client) (bool, error) {
 	_, err := client.DescribeTable(context.TODO(), &dynamodb.DescribeTableInput{
 		TableName: aws.String(tableName),
@@ -34,7 +32,6 @@ func tableExists(client *dynamodb.Client) (bool, error) {
 	return true, nil
 }
 
-// Create the table if it doesn't exist
 func createTable(client *dynamodb.Client) error {
 	_, err := client.CreateTable(context.TODO(), &dynamodb.CreateTableInput{
 		TableName: aws.String(tableName),
@@ -58,11 +55,10 @@ func createTable(client *dynamodb.Client) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Table created successfully.")
+
 	return nil
 }
 
-// Create an incident
 func createIncident(client *dynamodb.Client, incident Incident) error {
 	_, err := client.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(tableName),
@@ -77,7 +73,6 @@ func createIncident(client *dynamodb.Client, incident Incident) error {
 	return err
 }
 
-// Get an incident by ID
 func getIncident(client *dynamodb.Client, incidentID string) (*Incident, error) {
 	result, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
@@ -90,7 +85,7 @@ func getIncident(client *dynamodb.Client, incidentID string) (*Incident, error) 
 	}
 
 	if result.Item == nil {
-		return nil, fmt.Errorf("incident not found")
+		return nil, fmt.Errorf("Nie znaleziono incydentu")
 	}
 
 	incident := Incident{
@@ -104,7 +99,6 @@ func getIncident(client *dynamodb.Client, incidentID string) (*Incident, error) 
 	return &incident, nil
 }
 
-// Update an incident's status
 func updateIncident(client *dynamodb.Client, incidentID, newStatus string) error {
 	_, err := client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(tableName),
@@ -122,7 +116,6 @@ func updateIncident(client *dynamodb.Client, incidentID, newStatus string) error
 	return err
 }
 
-// Delete an incident by ID
 func deleteIncident(client *dynamodb.Client, incidentID string) error {
 	_, err := client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 		TableName: aws.String(tableName),

@@ -3,13 +3,12 @@ package main
 import (
 	context "context"
 	"encoding/json"
-	"log" // Added log package
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-// Lifeguard represents the structure used in the REST API.
 type Lifeguard struct {
 	Name              string `json:"name"`
 	Login             string `json:"login"`
@@ -19,10 +18,8 @@ type Lifeguard struct {
 	OnMission         bool   `json:"on_mission"`
 }
 
-// Global gRPC client variable
 var lifeguardClient LifeguardServiceClient
 
-// CreateLifeguardHandler handles the creation of a new lifeguard.
 func CreateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 	var lifeguard Lifeguard
 	err := json.NewDecoder(r.Body).Decode(&lifeguard)
@@ -47,21 +44,18 @@ func CreateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Lifeguard created: %+v\n", lifeguard)
+	log.Printf("Utworzono nowy wiersz w tabeli lifeguards: %+v\n", lifeguard)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
 
-// GetLifeguardHandler handles retrieving a lifeguard by ID.
 func GetLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -74,13 +68,10 @@ func GetLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Lifeguard retrieved with ID: %d\n", id)
-
+	log.Printf("Pobrano wiersz z tabeli lifeguards, id wiersza: %d\n", id)
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
 
-// UpdateLifeguardHandler handles updating a lifeguard.
 func UpdateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 	var lifeguard Lifeguard
 	err := json.NewDecoder(r.Body).Decode(&lifeguard)
@@ -91,10 +82,9 @@ func UpdateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -115,20 +105,17 @@ func UpdateLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Lifeguard updated with ID: %d, New Data: %+v\n", id, lifeguard)
+	log.Printf("Zaktualizowano wiersz w tabeli lifeguards, id wiersza: %d, nowy wiersz: %+v\n", id, lifeguard)
 
 	json.NewEncoder(w).Encode(lifeguardResponse)
 }
 
-// DeleteLifeguardHandler handles deleting a lifeguard.
 func DeleteLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -141,8 +128,7 @@ func DeleteLifeguardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Lifeguard deleted with ID: %d\n", id)
+	log.Printf("Usunięto wiersz z tabeli lifeguards, id wiersza: %d\n", id)
 
 	w.WriteHeader(http.StatusNoContent)
 }

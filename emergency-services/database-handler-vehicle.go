@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// CreateVehicle inserts a new vehicle record into the vehicles table.
 func CreateVehicle(db *sql.DB, vehicleType, location string, fuelLevelInLiters int, onMission bool, lifeguardInChargeID int) (int64, error) {
 	query := `
 		INSERT INTO vehicles (Type, Location, FuelLevelInLiters, OnMission, LifeguardInChargeID)
@@ -14,19 +13,17 @@ func CreateVehicle(db *sql.DB, vehicleType, location string, fuelLevelInLiters i
 	`
 	result, err := db.Exec(query, vehicleType, location, fuelLevelInLiters, onMission, lifeguardInChargeID)
 	if err != nil {
-		return 0, fmt.Errorf("error creating vehicle: %w", err)
+		return 0, fmt.Errorf("Nie udało się utworzyć pojazdu: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return 0, fmt.Errorf("error getting last insert ID: %w", err)
+		return 0, fmt.Errorf("Błąd podczas pobierania ID ostatniego wiersza: %w", err)
 	}
 
-	fmt.Printf("Vehicle with ID %d created successfully!\n", id)
 	return id, nil
 }
 
-// GetVehicleByID retrieves a vehicle record by its ID.
 func GetVehicleByID(db *sql.DB, id int) (*VehicleDTO, error) {
 	query := `SELECT ID, Type, Location, FuelLevelInLiters, OnMission, LifeguardInChargeID, CreatedAt FROM vehicles WHERE ID = ?`
 
@@ -44,21 +41,19 @@ func GetVehicleByID(db *sql.DB, id int) (*VehicleDTO, error) {
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("vehicle with ID %d not found", id)
+			return nil, fmt.Errorf("Pojazd o ID %d nie znaleziony", id)
 		}
-		return nil, fmt.Errorf("error retrieving vehicle: %w", err)
+		return nil, fmt.Errorf("Błąd podczas pobierania pojazdu: %w", err)
 	}
 
-	// Convert the []uint8 to a time.Time
 	vehicle.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(createdAt))
 	if err != nil {
-		return nil, fmt.Errorf("error parsing CreatedAt: %w", err)
+		return nil, fmt.Errorf("Błąd podczas parsowania pola CreatedAt: %w", err)
 	}
 
 	return &vehicle, nil
 }
 
-// UpdateVehicle updates an existing vehicle record in the vehicles table.
 func UpdateVehicle(db *sql.DB, id int, vehicleType, location string, fuelLevelInLiters int, onMission bool, lifeguardInChargeID int) error {
 	query := `
 		UPDATE vehicles
@@ -67,21 +62,20 @@ func UpdateVehicle(db *sql.DB, id int, vehicleType, location string, fuelLevelIn
 	`
 	_, err := db.Exec(query, vehicleType, location, fuelLevelInLiters, onMission, lifeguardInChargeID, id)
 	if err != nil {
-		return fmt.Errorf("error updating vehicle: %w", err)
+		return fmt.Errorf("Błąd podczas aktualizowania pojazdu: %w", err)
 	}
 
-	fmt.Printf("Vehicle with ID %d updated successfully!\n", id)
+	fmt.Printf("Zaktualizowano pojazd o ID %d!\n", id)
 	return nil
 }
 
-// DeleteVehicle deletes a vehicle record from the vehicles table by its ID.
 func DeleteVehicle(db *sql.DB, id int) error {
 	query := `DELETE FROM vehicles WHERE ID = ?`
 	_, err := db.Exec(query, id)
 	if err != nil {
-		return fmt.Errorf("error deleting vehicle: %w", err)
+		return fmt.Errorf("Błąd podczas usuwania pojazdu: %w", err)
 	}
 
-	fmt.Printf("Vehicle with ID %d deleted successfully!\n", id)
+	fmt.Printf("Pojazd o ID %d został usunięty!\n", id)
 	return nil
 }

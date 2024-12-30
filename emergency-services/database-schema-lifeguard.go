@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql" // Import the MySQL driver
+	_ "github.com/go-sql-driver/mysql"
 )
 
-// LifeguardDTO represents a lifeguard record in the lifeguards table.
 type LifeguardDTO struct {
 	ID                int
 	Name              string
@@ -20,9 +19,7 @@ type LifeguardDTO struct {
 	CreatedAt         time.Time
 }
 
-// CreateLifeguardsTable checks if the lifeguards table exists, and creates it if it doesn't.
 func CreateLifeguardsTable(db *sql.DB) error {
-	// SQL query to check if the table exists
 	checkTableQuery := `
 		SELECT COUNT(*)
 		FROM information_schema.tables 
@@ -35,7 +32,6 @@ func CreateLifeguardsTable(db *sql.DB) error {
 		return fmt.Errorf("error checking if table exists: %w", err)
 	}
 
-	// If the table does not exist, create it
 	if count == 0 {
 		createTableQuery := `
 			CREATE TABLE lifeguards (
@@ -51,12 +47,12 @@ func CreateLifeguardsTable(db *sql.DB) error {
 		`
 		_, err = db.Exec(createTableQuery)
 		if err != nil {
-			return fmt.Errorf("error creating lifeguards table: %w", err)
+			return fmt.Errorf("Błąd podczas tworzenia tabeli lifeguards: %w", err)
 		}
 
-		fmt.Println("Lifeguards table created successfully!")
+		fmt.Println("Pomyślnie utworzono tabelę lifeguards!")
 	} else {
-		fmt.Println("Lifeguards table already exists.")
+		fmt.Println("Tabela lifeguards już istnieje.")
 	}
 
 	return nil

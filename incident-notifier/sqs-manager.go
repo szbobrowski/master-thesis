@@ -11,13 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
 
-// SQSManager manages operations related to SQS queues
 type SQSManager struct {
 	client   *sqs.Client
 	queueURL string
 }
 
-// NewSQSManager creates a new SQSManager and ensures the queue exists
 func NewSQSManager(client *sqs.Client) (*SQSManager, error) {
 	manager := &SQSManager{
 		client: client,
@@ -31,36 +29,32 @@ func NewSQSManager(client *sqs.Client) (*SQSManager, error) {
 	return manager, nil
 }
 
-// ensureQueueExists checks if the queue exists and creates it if it doesn't
 func (m *SQSManager) ensureQueueExists() error {
-	// Check if the queue exists
 	result, err := m.client.GetQueueUrl(context.TODO(), &sqs.GetQueueUrlInput{
 		QueueName: aws.String(queueName),
 	})
 	if err != nil {
 		var notFoundErr *types.QueueDoesNotExist
 		if errors.As(err, &notFoundErr) {
-			// Queue does not exist, create it
 			createResult, err := m.client.CreateQueue(context.TODO(), &sqs.CreateQueueInput{
 				QueueName: aws.String(queueName),
 			})
 			if err != nil {
-				return fmt.Errorf("unable to create queue: %v", err)
+				return fmt.Errorf("Nie udało się utworzyć kolejki SQS: %v", err)
 			}
 			m.queueURL = *createResult.QueueUrl
-			log.Printf("Created SQS queue %s with URL: %s\n", queueName, m.queueURL)
+			log.Printf("Utworzono kolejkę SQS %s z URL:\n %s\n", queueName, m.queueURL)
 		} else {
-			return fmt.Errorf("unable to get queue URL: %v", err)
+			return fmt.Errorf("Nie udało się pobrać kolejki SQS: %v", err)
 		}
 	} else {
 		m.queueURL = *result.QueueUrl
-		log.Printf("SQS queue %s already exists with URL: %s\n", queueName, m.queueURL)
+		log.Printf("Kolejka SQS %s już istnieje z URL:\n %s\n", queueName, m.queueURL)
 	}
 
 	return nil
 }
 
-// SendMessage sends a message to the SQS queue with the given incident and operation type
 func (m *SQSManager) SendMessage(incident Incident, operation string) error {
 	messageBody := fmt.Sprintf(
 		`{"operation":"%s","incidentId":"%s","title":"%s","description":"%s","status":"%s","creationDate":"%s"}`,
@@ -73,9 +67,9 @@ func (m *SQSManager) SendMessage(incident Incident, operation string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to send message to SQS queue: %v", err)
+		return fmt.Errorf("Nie udało się wysłać wiadomości na kolejkę SQS: %v", err)
 	}
 
-	log.Printf("Incident %s with operation %s sent to SQS queue %s\n", incident.IncidentID, operation, queueName)
+	log.Printf("Incydent o ID %s z operacją %s wysłany do kolejki SQS %s\n", incident.IncidentID, operation, queueName)
 	return nil
 }

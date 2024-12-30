@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log" // Added log package
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-// Vehicle represents the structure used in the REST API.
 type Vehicle struct {
 	Type                string `json:"type"`
 	Location            string `json:"location"`
@@ -18,10 +17,8 @@ type Vehicle struct {
 	LifeguardInChargeId int64  `json:"lifeguard_in_charge_id"`
 }
 
-// Global gRPC client variable
 var vehicleClient VehicleServiceClient
 
-// CreateVehicleHandler handles the creation of a new vehicle.
 func CreateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 	var vehicle Vehicle
 	err := json.NewDecoder(r.Body).Decode(&vehicle)
@@ -45,21 +42,18 @@ func CreateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Vehicle created: %+v\n", vehicle)
+	log.Printf("Utworzono nowy wiersz w tabeli vehicles: %+v\n", vehicle)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
 
-// GetVehicleHandler handles retrieving a vehicle by ID.
 func GetVehicleHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -72,13 +66,11 @@ func GetVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Vehicle retrieved with ID: %d\n", id)
+	log.Printf("Pobrano wiersz z tabeli vehicles, id wiersza: %d\n", id)
 
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
 
-// UpdateVehicleHandler handles updating a vehicle.
 func UpdateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 	var vehicle Vehicle
 	err := json.NewDecoder(r.Body).Decode(&vehicle)
@@ -89,10 +81,9 @@ func UpdateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -112,20 +103,17 @@ func UpdateVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Vehicle updated with ID: %d, New Data: %+v\n", id, vehicle)
+	log.Printf("Zaktualizowano wiersz w tabeli vehicles, id wiersza: %d, nowy wiersz: %+v\n", id, vehicle)
 
 	json.NewEncoder(w).Encode(vehicleResponse)
 }
 
-// DeleteVehicleHandler handles deleting a vehicle.
 func DeleteVehicleHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 
-	// Convert the ID from string to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		http.Error(w, "Niepoprawny format id podany przez użytkownika", http.StatusBadRequest)
 		return
 	}
 
@@ -138,8 +126,7 @@ func DeleteVehicleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the event
-	log.Printf("Vehicle deleted with ID: %d\n", id)
+	log.Printf("Usunięto wiersz z tabeli vehicles, id wiersza: %d\n", id)
 
 	w.WriteHeader(http.StatusNoContent)
 }
